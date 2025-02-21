@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# 输入文件
+input_file=$1
+# 输出文件
+output_file="output.txt"
+
+# 清空输出文件
+> "$output_file"
+
+# 逐行读取输入文件
+while IFS= read -r line; do
+  # 检测是否包含 <line x1 字符串
+  if [[ $line == *"<line x1"* ]]; then
+    # 使用正则表达式提取 x1 的数值
+    if [[ $line =~ x1=\"([-]?[0-9]+\.[0-9]+)\" ]]; then
+      x1_value="${BASH_REMATCH[1]}"
+      # 替换 x2 的数值为 x1 的数值（支持负数）
+      line=$(echo "$line" | sed -E "s/x2=\"[-]?[0-9]+\.[0-9]+\"/x2=\"$x1_value\"/")
+    fi
+  fi
+  # 将处理后的行写入输出文件
+  echo "$line" >> "$output_file"
+done < "$input_file"
+
+echo "处理完成，结果已保存到 $output_file"

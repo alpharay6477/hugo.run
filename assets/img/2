@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# 检查是否提供了输入文件
+if [ -z "$1" ]; then
+  echo "错误：请提供输入文件作为参数。"
+  exit 1
+fi
+
+input_file="$1"
+output_file="${input_file%.*}_modified.${input_file##*.}"
+
+# 清空输出文件
+> "$output_file"
+
+# 逐行读取输入文件
+while IFS= read -r line; do
+  # 处理 y1 的值
+  if [[ $line =~ y1=\"([-]?[0-9]+\.[0-9]+)\" ]]; then
+    y1_value="${BASH_REMATCH[1]}"
+    new_y1_value=$(echo "$y1_value + 300" | bc)
+    line=$(echo "$line" | sed -E "s/y1=\"[-]?[0-9]+\.[0-9]+\"/y1=\"$new_y1_value\"/")
+  fi
+
+  # 处理 y2 的值
+  if [[ $line =~ y2=\"([-]?[0-9]+\.[0-9]+)\" ]]; then
+    y2_value="${BASH_REMATCH[1]}"
+    new_y2_value=$(echo "$y2_value + 300" | bc)
+    line=$(echo "$line" | sed -E "s/y2=\"[-]?[0-9]+\.[0-9]+\"/y2=\"$new_y2_value\"/")
+  fi
+
+  # 将处理后的行写入输出文件
+  echo "$line" >> "$output_file"
+done < "$input_file"
+
+echo "处理完成，结果已保存到 $output_file"
